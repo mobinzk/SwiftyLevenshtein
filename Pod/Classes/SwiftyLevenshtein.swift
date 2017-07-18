@@ -4,17 +4,17 @@
 //
 //  Created by Mark Hamilton on 3/31/16.
 //  Copyright © 2016 dryverless. (http://www.dryverless.com)
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,45 +22,45 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-// 
+//
 
 import Foundation
 
 // Minimize 3
 public func min3(a: Int, b: Int, c: Int) -> Int {
-
+    
     return min( min(a, c), min(b, c))
-
+    
 }
 
 // In case they ever let subscripts throw
 //public extension String {
-//    
+//
 //    internal enum SubscriptError: ErrorType {
-//        
+//
 //        case InvalidFirstChar
-//        
+//
 //        case InvalidLastChar
-//        
+//
 //    }
 //
 //
 //    subscript(range: Range<Int>) throws -> String {
-//        
+//
 //        guard let firstChar = startIndex.advancedBy(range.startIndex) else {
-//    
+//
 //            throw SubscriptError.InvalidFirstChar
 //        }
-//    
+//
 //        guard  let lastChar = startIndex.advancedBy(range.endIndex) else {
-//    
+//
 //            throw SubscriptError.InvalidLastChar
-//    
+//
 //        }
-//    
+//
 //        return self[firstChar...<lastChar]
-//        
-//        
+//
+//
 //    }
 //
 //}
@@ -69,15 +69,15 @@ public extension String {
     
     subscript(index: Int) -> Character {
         
-        return self[startIndex.advancedBy(index)]
+        return self[index]
         
     }
     
     subscript(range: Range<Int>) -> String {
         
-        let char0 = startIndex.advancedBy(range.startIndex)
+        let char0 = range.lowerBound
         
-        let charN = startIndex.advancedBy(range.endIndex)
+        let charN = range.upperBound
         
         return self[char0..<charN]
         
@@ -98,7 +98,7 @@ public struct Array2D {
         
         self.rows = rows
         
-        matrix = Array(count:columns*rows, repeatedValue:0)
+        matrix = Array(repeating:0, count:columns*rows)
         
     }
     
@@ -135,14 +135,14 @@ public struct Array2D {
  * Calculates the minimum number of changes (distance) between two strings.
  */
 
-public func slowlevenshtein(sourceString: String, target targetString: String) -> Int {
+public func slowlevenshtein(_ sourceString: String, target targetString: String) -> Int {
     
     let source = Array(sourceString.unicodeScalars)
     let target = Array(targetString.unicodeScalars)
     
     let (sourceLength, targetLength) = (source.count, target.count)
     
-    var matrix = Array(count: targetLength + 1, repeatedValue: Array(count: sourceLength + 1, repeatedValue: 0))
+    var matrix = Array(repeating: Array(repeating: 0, count: sourceLength + 1), count: targetLength + 1)
     
     for x in  1..<targetLength {
         
@@ -164,7 +164,7 @@ public func slowlevenshtein(sourceString: String, target targetString: String) -
             
             let (deletions, insertions, substitutions) = (matrix[x - 1][y] + 1, matrix[x][y - 1] + 1, matrix[x - 1][y - 1])
             
-            matrix[x][y] = min3(deletions, b: insertions, c: substitutions + penalty)
+            matrix[x][y] = min3(a: deletions, b: insertions, c: substitutions + penalty)
             
         }
         
@@ -174,7 +174,7 @@ public func slowlevenshtein(sourceString: String, target targetString: String) -
     
 }
 
-public func levenshtein(sourceString: String, target targetString: String) -> Int {
+public func levenshtein(_ sourceString: String, target targetString: String) -> Int {
     
     let source = Array(sourceString.unicodeScalars)
     let target = Array(targetString.unicodeScalars)
@@ -209,7 +209,7 @@ public func levenshtein(sourceString: String, target targetString: String) -> In
                 distance[x, y] = min3(
                     
                     // deletions
-                    distance[x - 1, y] + 1,
+                    a: distance[x - 1, y] + 1,
                     // insertions
                     b: distance[x, y - 1] + 1,
                     // substitutions
@@ -229,13 +229,13 @@ public func levenshtein(sourceString: String, target targetString: String) -> In
 
 public extension String {
     
-    func getSlowLevenshtein(target: String) -> Int {
+    func getSlowLevenshtein(_ target: String) -> Int {
         
         return slowlevenshtein(self, target: target)
-    
+        
     }
     
-    func getLevenshtein(target: String) -> Int {
+    func getLevenshtein(_ target: String) -> Int {
         
         return levenshtein(self, target: target)
         
